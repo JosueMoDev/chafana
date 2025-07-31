@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "../amplify/data/resource";
-import "./../app/app.css";
+import { useState } from "react";
+// import { generateClient } from "aws-amplify/data";
+// import type { Schema } from "../amplify/data/resource";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
-import { uploadData } from "aws-amplify/storage";
+import Image from "next/image";
+import { FileUploader } from "@aws-amplify/ui-react-storage";
+import { getUrl } from "aws-amplify/storage";
+import { Authenticator } from "@aws-amplify/ui-react";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 Amplify.configure(outputs);
 
-const client = generateClient<Schema>();
+// const client = generateClient<Schema>();
 
 export default function App() {
   // const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
@@ -26,56 +29,79 @@ export default function App() {
   //   listTodos();
   // }, []);
 
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
+  // function createTodo() {
+  //   client.models.Todo.create({
+  //     content: window.prompt("Todo content"),
+  //   });
+  // }
+
+  const [pathUrl, setPathUrl] = useState<string | null>();
+
+  const hadleUploadFile = async ($event: { key?: string }) => {
+    const response = await getUrl({
+      path: $event.key!,
     });
-  }
 
-  const [file, setFile] = useState<File | null>();
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const input = event.target as HTMLInputElement;
-    const files = input.files as FileList;
-    if (!files.length) return;
-    const file = files[0];
-    setFile(file);
+    setPathUrl(response.url.href);
   };
 
-  const handleClick = () => {
-    if (!file) {
-      return;
-    }
-    uploadData({
-      path: `task-pictures/f9a1efee-97c6-417f-9832-d242a3b7f8ed/${file.name}`,
-      data: file,
-    });
+  const handleSession = async () => {
+    const session = await fetchAuthSession();
+    if (session === undefined) return;
+    console.log("id token", session.tokens!.idToken);
+    console.log("access token", session.tokens!.accessToken);
   };
+
+  if (pathUrl)
+    return (
+      <Image
+        src={pathUrl}
+        alt="imagen"
+        width={500}
+        height={700}
+        className="object-fit"
+      />
+    );
 
   // return (
-  //   <main>
-  //     <h1>My todos</h1>
-  //     <button onClick={createTodo}>+ new</button>
-  //     <ul>
-  //       {todos.map((todo) => (
-  //         <li key={todo.id}>{todo.content}</li>
-  //       ))}
-  //     </ul>
-  //     <div>
-  //       🥳 App successfully hosted. Try creating a new todo.
-  //       <br />
-  //       <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
-  //         Review next steps of this tutorial.
-  //       </a>
-  //     </div>
-
-  //   </main>
+  //   <FileUploader
+  //     acceptedFileTypes={["image/*", "video/*", "application/pdf"]}
+  //     path="task-pictures/d4483b1f-4407-4f0e-8616-bc09d593089b/"
+  //     maxFileCount={1}
+  //     isResumable
+  //     onUploadSuccess={($event) => hadleUploadFile($event)}
+  //   />
   // );
-
+  const formFields = {
+    signUp: {
+      email: {
+        order: 1,
+      },
+      username: {
+        order: 2,
+      },
+      phone_number: {
+        order: 3,
+      },
+      password: {
+        order: 4,
+      },
+      confirm_password: {
+        order: 5,
+      },
+    },
+  };
   return (
-    <div>
-      <input type="file" onChange={handleChange} />
-      <button onClick={handleClick}>Upload</button>
-    </div>
+    <Authenticator
+      formFields={formFields}
+      socialProviders={["amazon", "apple", "facebook", "google"]}
+    >
+      {({ signOut, user }) => (
+        <main>
+          <button onClick={handleSession}>Get Token</button>
+          <button onClick={signOut}>Sign out</button>
+        </main>
+      )}
+    </Authenticator>
   );
 }
