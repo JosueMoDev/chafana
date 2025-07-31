@@ -14,17 +14,17 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  // const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }
+  // function listTodos() {
+  //   client.models.Todo.observeQuery().subscribe({
+  //     next: (data) => setTodos([...data.items]),
+  //   });
+  // }
 
-  useEffect(() => {
-    listTodos();
-  }, []);
+  // useEffect(() => {
+  //   listTodos();
+  // }, []);
 
   function createTodo() {
     client.models.Todo.create({
@@ -47,7 +47,7 @@ export default function App() {
       return;
     }
     uploadData({
-      path: `task-pictures/${file.name}`,
+      path: `task-pictures/f9a1efee-97c6-417f-9832-d242a3b7f8ed/${file.name}`,
       data: file,
     });
   };
