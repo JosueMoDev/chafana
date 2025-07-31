@@ -2,6 +2,7 @@ import { defineStorage } from "@aws-amplify/backend";
 
 export const chafanaStorage = defineStorage({
   name: "chafana-storage",
+
   //   isDefault: true,
   access: (allow) => ({
     "task-pictures/{entity_id}/*": [
