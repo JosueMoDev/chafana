@@ -17,7 +17,7 @@ export default function App() {
 
   function listTodos() {
     client.models.Todo.observeQuery().subscribe({
-      next: (data) => console.log(data),
+      next: (data) => setTodos([...data.items]),
     });
   }
 
