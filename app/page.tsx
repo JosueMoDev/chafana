@@ -7,6 +7,7 @@ import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
+import { uploadData } from "aws-amplify/storage";
 
 Amplify.configure(outputs);
 
@@ -31,22 +32,50 @@ export default function App() {
     });
   }
 
+  const [file, setFile] = useState<File | null>();
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files as FileList;
+    if (!files.length) return;
+    const file = files[0];
+    setFile(file);
+  };
+
+  const handleClick = () => {
+    if (!file) {
+      return;
+    }
+    uploadData({
+      path: `task-pictures/${file.name}`,
+      data: file,
+    });
+  };
+
+  // return (
+  //   <main>
+  //     <h1>My todos</h1>
+  //     <button onClick={createTodo}>+ new</button>
+  //     <ul>
+  //       {todos.map((todo) => (
+  //         <li key={todo.id}>{todo.content}</li>
+  //       ))}
+  //     </ul>
+  //     <div>
+  //       🥳 App successfully hosted. Try creating a new todo.
+  //       <br />
+  //       <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
+  //         Review next steps of this tutorial.
+  //       </a>
+  //     </div>
+
+  //   </main>
+  // );
+
   return (
-    <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
-          Review next steps of this tutorial.
-        </a>
-      </div>
-    </main>
+    <div>
+      <input type="file" onChange={handleChange} />
+      <button onClick={handleClick}>Upload</button>
+    </div>
   );
 }
